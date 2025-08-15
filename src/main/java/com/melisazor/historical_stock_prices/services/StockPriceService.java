@@ -1,5 +1,6 @@
 package com.melisazor.historical_stock_prices.services;
 
+import com.melisazor.historical_stock_prices.customExceptions.InvalidSymbolException;
 import com.melisazor.historical_stock_prices.entities.AlphaVantageResponse;
 import com.melisazor.historical_stock_prices.entities.StockPrice;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,8 +11,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -25,6 +29,36 @@ public class StockPriceService {
 
     public StockPriceService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
+    }
+
+    public StockPrice getValidSymbols(String symbol) throws IOException {
+        String partialUrl = "https://www.alphavantage.co/query?function=LISTING_STATUS&apikey=%s";
+        String apiUrl = String.format(partialUrl, alphaVantageApiKey);
+
+        ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.GET, null, String.class);
+
+        String csvData = response.getBody();
+        if(csvData == null || csvData.isBlank()) {
+            throw new RuntimeException("No data received from Alpha Vantage");
+        }
+
+        // parse tickers
+        List<String> symbols = new ArrayList<>();
+        String[] lines = csvData.split("\n");
+
+        for (int i = 1; i < lines.length; i++) {
+            String[] columns = lines[i].split(",");
+
+            String ticker = columns[0].trim();
+            symbols.add(ticker);
+        }
+
+        // return early if ticker is not valid
+        if (!symbols.contains(symbol)) {
+            throw new InvalidSymbolException("Symbol " + symbol + " is not valid");
+        }
+
+        return getStockPrices(symbol);
     }
 
     public StockPrice getStockPrices(String symbol){
