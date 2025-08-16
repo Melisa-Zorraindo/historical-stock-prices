@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.util.Map;
 
 @Data
@@ -12,6 +11,6 @@ import java.util.Map;
 @AllArgsConstructor
 public class StockPrice {
     private String symbol;
-    private LocalDate lastRefreshed;
-    private Map<LocalDate, Double> prices;
+    private String lastRefreshed;
+    private Map<String, String> prices;
 }
