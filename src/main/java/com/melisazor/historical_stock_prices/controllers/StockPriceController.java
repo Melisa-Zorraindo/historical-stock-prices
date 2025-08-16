@@ -1,9 +1,10 @@
 package com.melisazor.historical_stock_prices.controllers;
 
-import com.melisazor.historical_stock_prices.customExceptions.InvalidSymbolException;
 import com.melisazor.historical_stock_prices.entities.StockPrice;
 import com.melisazor.historical_stock_prices.enums.Tickers;
 import com.melisazor.historical_stock_prices.services.StockPriceService;
+import com.melisazor.historical_stock_prices.validation.annotations.ValidDateRange;
+import com.melisazor.historical_stock_prices.validation.annotations.ValidTicker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.time.LocalDate;
 
 @RestController
 @Validated
@@ -23,16 +24,13 @@ public class StockPriceController {
     StockPriceService stockPriceService;
 
     @GetMapping("/api/historical/{symbol}/{startDate}/{endDate}")
-    public ResponseEntity<StockPrice> getStockPrices(@PathVariable String symbol, @PathVariable String startDate, @PathVariable String endDate)
-            throws IOException, InvalidSymbolException {
+    @ValidDateRange
+    public ResponseEntity<StockPrice> getStockPrices(
+            @PathVariable @ValidTicker String symbol,
+            @PathVariable LocalDate startDate,
+            @PathVariable LocalDate endDate) throws IOException {
 
-        Tickers ticker;
-        try {
-            ticker = Tickers.valueOf(symbol.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new InvalidSymbolException("Ticker " + symbol + " is not valid. Valid tickers are: " + Arrays
-                    .toString(Tickers.values()));
-        }
+        Tickers ticker = Tickers.valueOf(symbol.toUpperCase());
 
         StockPrice stockPrice = stockPriceService.getStockPrices(ticker);
         return new ResponseEntity<>(stockPrice, HttpStatus.OK);
