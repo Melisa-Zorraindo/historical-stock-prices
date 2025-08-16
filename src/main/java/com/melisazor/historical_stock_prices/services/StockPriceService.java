@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.text.ParseException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -32,7 +31,7 @@ public class StockPriceService {
     }
 
     @Cacheable(value = "STOCK_PRICE", key = "#symbol")
-    public StockPrice getStockPrices(Tickers symbol) throws ParseException {
+    public StockPrice getStockPrices(Tickers symbol) {
         String partialUrl = "https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol=%s&apikey=%s";
         String apiUrl = String.format(partialUrl, symbol, alphaVantageApiKey);
 
@@ -44,7 +43,7 @@ public class StockPriceService {
         return mapToStockPrice(exchange.getBody());
     }
 
-    private StockPrice mapToStockPrice(AlphaVantageResponse response) throws ParseException {
+    private StockPrice mapToStockPrice(AlphaVantageResponse response) {
         StockPrice stockPrice = new StockPrice();
         stockPrice.setSymbol(response.getMetaData().get("2. Symbol"));
         stockPrice.setLastRefreshed(response.getMetaData().get("3. Last Refreshed"));

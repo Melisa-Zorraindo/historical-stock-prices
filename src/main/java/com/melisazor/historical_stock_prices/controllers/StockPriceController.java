@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.Arrays;
 
 @RestController
@@ -23,13 +22,16 @@ public class StockPriceController {
     @Autowired
     StockPriceService stockPriceService;
 
-    @GetMapping("/api/historical/{symbol}")
-    public ResponseEntity<StockPrice> getStockPrices(@PathVariable("symbol") String symbol) throws IOException, InvalidSymbolException, ParseException {
+    @GetMapping("/api/historical/{symbol}/{startDate}/{endDate}")
+    public ResponseEntity<StockPrice> getStockPrices(@PathVariable String symbol, @PathVariable String startDate, @PathVariable String endDate)
+            throws IOException, InvalidSymbolException {
+
         Tickers ticker;
         try {
             ticker = Tickers.valueOf(symbol.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new InvalidSymbolException("Ticker " + symbol + " is not valid. Valid tickers are: " + Arrays.toString(Tickers.values()));
+            throw new InvalidSymbolException("Ticker " + symbol + " is not valid. Valid tickers are: " + Arrays
+                    .toString(Tickers.values()));
         }
 
         StockPrice stockPrice = stockPriceService.getStockPrices(ticker);
