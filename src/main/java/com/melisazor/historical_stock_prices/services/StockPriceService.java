@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -31,7 +32,7 @@ public class StockPriceService {
     }
 
     @Cacheable(value = "STOCK_PRICE", key = "#symbol")
-    public StockPrice getStockPrices(Tickers symbol) {
+    public StockPrice getStockPrices(Tickers symbol, LocalDate startDate, LocalDate endDate) {
         String partialUrl = "https://www.alphavantage.co/query?function=TIME_SERIES_MONTHLY_ADJUSTED&symbol=%s&apikey=%s";
         String apiUrl = String.format(partialUrl, symbol, alphaVantageApiKey);
 
@@ -40,20 +41,21 @@ public class StockPriceService {
         });
 
         assert exchange.getBody() != null;
-        return mapToStockPrice(exchange.getBody());
+        return mapToStockPrice(exchange.getBody(), startDate, endDate);
     }
 
-    private StockPrice mapToStockPrice(AlphaVantageResponse response) {
+    private StockPrice mapToStockPrice(AlphaVantageResponse response, LocalDate startDate, LocalDate endDate) {
         StockPrice stockPrice = new StockPrice();
         stockPrice.setSymbol(response.getMetaData().get("2. Symbol"));
         stockPrice.setLastRefreshed(response.getMetaData().get("3. Last Refreshed"));
 
         Map<String, String> priceMap = new LinkedHashMap<>();
         for (Map.Entry<String, Map<String, String>> entry : response.getMonthlyAdjustedTimeSeries().entrySet()) {
-            String date = entry.getKey();
-            String adjustedClose = entry.getValue().get("5. adjusted close");
-            priceMap.put(date, adjustedClose);
-
+            LocalDate date = LocalDate.parse(entry.getKey());
+            if (!date.isBefore(startDate) && !date.isAfter(endDate)) {
+                String adjustedClose = entry.getValue().get("5. adjusted close");
+                priceMap.put(date.toString(), adjustedClose);
+            }
         }
 
         stockPrice.setPrices(priceMap);

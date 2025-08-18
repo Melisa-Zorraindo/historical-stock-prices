@@ -14,11 +14,8 @@ public class DateRangeValidator implements ConstraintValidator<ValidDateRange, O
     @Override
     public boolean isValid(Object[] params, ConstraintValidatorContext context) {
         LocalDate today = LocalDate.now();
-        System.out.println("TODAY: " + today);
         LocalDate start = (LocalDate) params[1];
-        System.out.println("START: " + start);
         LocalDate end = (LocalDate) params[2];
-        System.out.println("END: " + end);
 
         boolean valid = true;
         if (start.isAfter(today)) {
@@ -29,7 +26,7 @@ public class DateRangeValidator implements ConstraintValidator<ValidDateRange, O
 
         if (end.isAfter(today)) {
             valid = false;
-            context.disableDefaultConstraintViolation();;
+            context.disableDefaultConstraintViolation();
             context.buildConstraintViolationWithTemplate("End date must be in the past or in the present.")
                     .addConstraintViolation();
         }
