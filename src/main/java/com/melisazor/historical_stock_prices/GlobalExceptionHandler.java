@@ -1,5 +1,6 @@
 package com.melisazor.historical_stock_prices;
 
+import com.melisazor.historical_stock_prices.exceptions.RateLimitExceededException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -25,4 +26,10 @@ public class GlobalExceptionHandler {
         response.put("message", message);
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<Map<String, String>> handleRateLimitExceededException(RateLimitExceededException rateLimitExceededException) {
+        Map<String, String> response = new HashMap<>();
+        response.put("message", rateLimitExceededException.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.TOO_MANY_REQUESTS);}
 }

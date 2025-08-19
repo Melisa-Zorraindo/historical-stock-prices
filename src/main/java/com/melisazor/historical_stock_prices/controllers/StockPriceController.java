@@ -1,5 +1,6 @@
 package com.melisazor.historical_stock_prices.controllers;
 
+import com.melisazor.historical_stock_prices.aspects.RateLimited;
 import com.melisazor.historical_stock_prices.entities.StockPrice;
 import com.melisazor.historical_stock_prices.enums.Tickers;
 import com.melisazor.historical_stock_prices.services.StockPriceService;
@@ -27,6 +28,7 @@ public class StockPriceController {
 
     @GetMapping("/api/historical/{symbol}/{startDate}/{endDate}")
     @ValidDateRange
+    @RateLimited(limit = 5, timeWindowSeconds = 60)
     public ResponseEntity<StockPrice> getStockPrices(
             @PathVariable @ValidTicker String symbol,
             @PathVariable LocalDate startDate,
