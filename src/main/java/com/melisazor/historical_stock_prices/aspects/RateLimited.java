@@ -8,12 +8,9 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RateLimited {
-    int limit();
-    int timeWindowSeconds();
 
-    // TODO: enhance with limit per day
-    // int perMinuteLimit();
-    // int minuteWindowLimit();
-    // int perDayLimit();
-    // int dayWindowLimit();
+    int perMinuteLimit();
+    int minuteWindowLimit();
+    int perDayLimit();
+    int dayWindowLimit();
 }

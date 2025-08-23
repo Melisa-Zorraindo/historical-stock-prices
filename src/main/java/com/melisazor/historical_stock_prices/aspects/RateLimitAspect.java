@@ -30,9 +30,11 @@ public class RateLimitAspect {
         RateLimited rateLimit = method.getAnnotation(RateLimited.class);
 
         String apiKey = httpServletRequest.getParameter("apiKey");
-        String redisKey = "rate_limit:" + apiKey + ":"+method.getName();
-        // TODO: enhance with limit per day
-        boolean allowed = redisRateLimiter.isAllowed(redisKey, rateLimit.limit(), rateLimit.timeWindowSeconds());
+        String redisShortLimitKey = "short_rate_limit:" + apiKey + ":" + method.getName();
+        String redisLongLimitKey = "long_rate_limit:" + apiKey + ":" + method.getName();
+
+        boolean allowed = redisRateLimiter.isAllowed(redisShortLimitKey, rateLimit.perMinuteLimit(),
+                rateLimit.minuteWindowLimit(), redisLongLimitKey, rateLimit.perDayLimit(), rateLimit.dayWindowLimit());
 
         if (!allowed) throw new RateLimitExceededException("Too many requests.");
 

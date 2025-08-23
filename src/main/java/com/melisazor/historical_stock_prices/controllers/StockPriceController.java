@@ -28,7 +28,7 @@ public class StockPriceController {
 
     @GetMapping("/api/historical/{symbol}/{startDate}/{endDate}")
     @ValidDateRange
-    @RateLimited(limit = 5, timeWindowSeconds = 60)
+    @RateLimited(perMinuteLimit = 5, minuteWindowLimit = 1, perDayLimit = 50, dayWindowLimit = 1)
     public ResponseEntity<StockPrice> getStockPrices(
             @PathVariable @ValidTicker String symbol,
             @PathVariable LocalDate startDate,

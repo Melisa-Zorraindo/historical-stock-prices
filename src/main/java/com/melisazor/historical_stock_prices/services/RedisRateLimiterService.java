@@ -12,12 +12,20 @@ public class RedisRateLimiterService {
     @Autowired
     private StringRedisTemplate redisTemplate;
 
-    public boolean isAllowed(String key, int limit, int timeWindowSeconds) {
-        // TODO: enhance with limit per day
-        Long currentCount = redisTemplate.opsForValue().increment(key);
-        if (currentCount != null && currentCount == 1) {
-            redisTemplate.expire(key, Duration.ofSeconds(timeWindowSeconds));
+    public boolean isAllowed(String shortKeyLimit, int perMinuteLimit, int minuteWindowLimit, String redisLongLimitKey,
+                             int perDayLimit, int dayWindowLimit) {
+
+        Long shortLimitCount = redisTemplate.opsForValue().increment(shortKeyLimit);
+        if (shortLimitCount != null && shortLimitCount == 1) {
+            redisTemplate.expire(shortKeyLimit, Duration.ofMinutes(minuteWindowLimit));
         }
-        return currentCount == null || currentCount <= limit;
+
+        Long longLimitCount = redisTemplate.opsForValue().increment(redisLongLimitKey);
+        if (longLimitCount != null && longLimitCount == 1) {
+            redisTemplate.expire(redisLongLimitKey, Duration.ofDays(dayWindowLimit));
+        }
+
+        return (shortLimitCount != null && shortLimitCount <= perMinuteLimit)
+                && (longLimitCount != null && longLimitCount <= perDayLimit);
     }
 }
